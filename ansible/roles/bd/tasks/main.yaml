@@ -23,3 +23,18 @@
 # Aplicar ya el bind-address antes de crear nada
 - name: Aplicar la configuración
   ansible.builtin.meta: flush_handlers
+
+- name: Crear la base de datos
+  community.mysql.mysql_db:
+    name: "{{ bd_nombre }}"
+    state: present
+    login_unix_socket: "{{ mariadb_socket }}"
+
+- name: Crear el usuario (solo desde el servidor web por la red de datos)
+  community.mysql.mysql_user:
+    name: "{{ bd_usuario }}"
+    host: "{{ ip_datos_web }}"
+    password: "{{ bd_password }}"
+    priv: "{{ bd_nombre }}.*:ALL"
+    state: present
+    login_unix_socket: "{{ mariadb_socket }}"

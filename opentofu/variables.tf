@@ -44,3 +44,38 @@ variable "clave_ssh" {
   description = "Ruta de la clave pública ssh"
   default     = "~/.ssh/id_rsa.pub"
 }
+
+# Direccionamiento
+variable "red_nat" {
+  type        = string
+  description = "Rango de la red NAT (DHCP)"
+  default     = "192.168.130.0/24"
+}
+
+# IP fijas que da el DHCP de la red NAT (reserva por MAC), así el nombre del
+# virtual host apunta siempre a la misma IP aunque se destruya el escenario
+variable "ip_nat_web" {
+  type    = string
+  default = "192.168.130.10"
+}
+
+variable "ip_nat_bd" {
+  type    = string
+  default = "192.168.130.20"
+}
+
+# IP estáticas en la red de datos (se configuran con cloud-init)
+variable "ip_datos_web" {
+  type    = string
+  default = "10.10.10.10"
+}
+
+variable "ip_datos_bd" {
+  type    = string
+  default = "10.10.10.20"
+}
+
+variable "mascara_datos" {
+  type    = number
+  default = 24
+}

@@ -1,0 +1,17 @@
+# Lo que genera OpenTofu
+opentofu/.terraform/
+opentofu/terraform.tfstate
+opentofu/terraform.tfstate.backup
+opentofu/*.tfstate*
+opentofu/crash.log
+
+# Inventario de Ansible (lo genera OpenTofu)
+ansible/hosts
+
+# Imágenes de disco y ficheros grandes
+*.qcow2
+*.img
+*.iso
+*.sql.gz
+
+*.retry

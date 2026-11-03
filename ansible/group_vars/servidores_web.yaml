@@ -1,0 +1,16 @@
+---
+paquetes_web:
+  - apache2
+  - libapache2-mod-php
+  - php-mysql
+  - php-mbstring
+  - git
+  - mariadb-client
+
+# Virtual host
+servidor_nombre: www.davidpefierro.org
+document_root: /var/www/guestbook
+
+# Aplicación
+app_repo: https://github.com/josedom24/guestbook_php.git
+app_version: main

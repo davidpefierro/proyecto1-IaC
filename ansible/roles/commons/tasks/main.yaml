@@ -1,0 +1,24 @@
+---
+# Las máquinas acaban de arrancar: esperar a ssh y a que termine cloud-init
+- name: Esperar a que la máquina responda
+  ansible.builtin.wait_for_connection:
+    timeout: 300
+
+- name: Esperar a que termine cloud-init
+  ansible.builtin.command: cloud-init status --wait
+  register: cloudinit
+  changed_when: false
+  failed_when: cloudinit.rc not in [0, 2]
+
+- name: Actualizar el sistema
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: dist
+    lock_timeout: 600
+
+- name: Instalar paquetes comunes
+  ansible.builtin.apt:
+    name: "{{ paquetes_comunes }}"
+    state: present
+    lock_timeout: 600

@@ -38,3 +38,28 @@
     priv: "{{ bd_nombre }}.*:ALL"
     state: present
     login_unix_socket: "{{ mariadb_socket }}"
+
+# schema.sql no es idempotente (CREATE TABLE sin IF NOT EXISTS), así que
+# solo se importa si la tabla messages todavía no existe
+- name: Comprobar si ya están las tablas
+  community.mysql.mysql_query:
+    login_db: "{{ bd_nombre }}"
+    query: SHOW TABLES LIKE 'messages'
+    login_unix_socket: "{{ mariadb_socket }}"
+  register: tablas
+  changed_when: false
+
+- name: Descargar schema.sql de la aplicación
+  ansible.builtin.get_url:
+    url: "{{ schema_url }}"
+    dest: "{{ schema_destino }}"
+    mode: "0644"
+  when: tablas.rowcount[0] == 0
+
+- name: Crear las tablas
+  community.mysql.mysql_db:
+    name: "{{ bd_nombre }}"
+    state: import
+    target: "{{ schema_destino }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+  when: tablas.rowcount[0] == 0

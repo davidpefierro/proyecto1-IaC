@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+<VirtualHost *:80>
+    ServerName {{ servidor_nombre }}
+    DocumentRoot {{ document_root }}
+
+    <Directory {{ document_root }}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # No servir el repositorio git
+    <DirectoryMatch "/\.git">
+        Require all denied
+    </DirectoryMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/guestbook_error.log
+    CustomLog ${APACHE_LOG_DIR}/guestbook_access.log combined
+</VirtualHost>

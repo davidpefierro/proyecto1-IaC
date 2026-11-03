@@ -1,0 +1,7 @@
+---
+mariadb_socket: /run/mysqld/mysqld.sock
+mariadb_config: /etc/mysql/mariadb.conf.d/60-guestbook.cnf
+
+# De aquí se baja el schema.sql de la aplicación
+schema_url: https://raw.githubusercontent.com/josedom24/guestbook_php/main/schema.sql
+schema_destino: /var/lib/mysql-files/guestbook-schema.sql

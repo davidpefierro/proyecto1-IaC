@@ -1,0 +1,25 @@
+---
+- name: Instalar MariaDB
+  ansible.builtin.apt:
+    name: mariadb-server
+    state: present
+    lock_timeout: 600
+
+- name: Escuchar solo en la red de datos
+  ansible.builtin.template:
+    src: 60-guestbook.cnf.j2
+    dest: "{{ mariadb_config }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar mariadb
+
+- name: MariaDB arrancado y habilitado
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: true
+
+# Aplicar ya el bind-address antes de crear nada
+- name: Aplicar la configuración
+  ansible.builtin.meta: flush_handlers

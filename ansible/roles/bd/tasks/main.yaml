@@ -36,6 +36,7 @@
     host: "{{ ip_datos_web }}"
     password: "{{ bd_password }}"
     priv: "{{ bd_nombre }}.*:ALL"
+    column_case_sensitive: true
     state: present
     login_unix_socket: "{{ mariadb_socket }}"
 

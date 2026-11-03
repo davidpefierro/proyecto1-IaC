@@ -1,0 +1,17 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.p1.local
+manage_etc_hosts: true
+timezone: Europe/Madrid
+
+users:
+  - name: ${usuario}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${clave_ssh}
+
+# La actualización y los paquetes los hace Ansible (rol commons)
+package_update: false
+package_upgrade: false

@@ -10,6 +10,9 @@
   changed_when: false
   failed_when: cloudinit.rc not in [0, 2]
 
+- name: Recoger facts
+  ansible.builtin.setup:
+
 - name: Actualizar el sistema
   ansible.builtin.apt:
     update_cache: true

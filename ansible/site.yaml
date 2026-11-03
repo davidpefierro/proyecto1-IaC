@@ -2,6 +2,8 @@
 - name: Configuración común
   hosts: all
   become: true
+  # Los facts se recogen en el rol, cuando la máquina ya responde por ssh
+  gather_facts: false
   roles:
     - commons
 

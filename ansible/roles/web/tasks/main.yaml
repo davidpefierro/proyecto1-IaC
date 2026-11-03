@@ -37,3 +37,20 @@
   args:
     removes: /etc/apache2/sites-enabled/000-default.conf
   notify: Recargar apache
+
+# update: false para que la segunda vez no choque con el config.php que
+# sobrescribimos (está versionado en el repo de la aplicación)
+- name: Desplegar la aplicación
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ document_root }}"
+    version: "{{ app_version }}"
+    update: false
+
+- name: Generar config.php
+  ansible.builtin.template:
+    src: config.php.j2
+    dest: "{{ document_root }}/config.php"
+    owner: root
+    group: www-data
+    mode: "0640"

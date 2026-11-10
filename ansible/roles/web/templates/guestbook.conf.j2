@@ -9,6 +9,13 @@
         Require all granted
     </Directory>
 
+    DirectoryIndex index.php index.html
+
+    # Los .php los ejecuta PHP-FPM en la máquina php, por la red de datos
+    <FilesMatch "\.php$">
+        SetHandler "proxy:fcgi://{{ ip_datos_php }}:{{ php_fpm_puerto }}"
+    </FilesMatch>
+
     # No servir el repositorio git
     <DirectoryMatch "/\.git">
         Require all denied

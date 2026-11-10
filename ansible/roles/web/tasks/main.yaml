@@ -1,9 +1,23 @@
 ---
-- name: Instalar Apache, PHP y lo que necesita la aplicación
+- name: Instalar Apache
   ansible.builtin.apt:
     name: "{{ paquetes_web }}"
     state: present
     lock_timeout: 600
+
+# PHP ya no se ejecuta en esta máquina, se encarga php por PHP-FPM
+- name: Quitar mod_php si estuviera instalado
+  ansible.builtin.apt:
+    name: libapache2-mod-php*
+    state: absent
+    lock_timeout: 600
+  notify: Reiniciar apache
+
+- name: Activar mod_proxy_fcgi para mandar los .php a PHP-FPM
+  community.general.apache2_module:
+    name: proxy_fcgi
+    state: present
+  notify: Reiniciar apache
 
 - name: Activar mod_rewrite (lo usa el .htaccess de la aplicación)
   community.general.apache2_module:
@@ -38,19 +52,12 @@
     removes: /etc/apache2/sites-enabled/000-default.conf
   notify: Recargar apache
 
-# update: false para que la segunda vez no choque con el config.php que
-# sobrescribimos (está versionado en el repo de la aplicación)
+# Apache necesita los ficheros para servir los estáticos (css) y para las
+# reglas del .htaccess, que comprueban si el fichero existe. El config.php
+# con la contraseña solo está en php, que es quien se conecta a la base de datos
 - name: Desplegar la aplicación
   ansible.builtin.git:
     repo: "{{ app_repo }}"
     dest: "{{ document_root }}"
     version: "{{ app_version }}"
     update: false
-
-- name: Generar config.php
-  ansible.builtin.template:
-    src: config.php.j2
-    dest: "{{ document_root }}/config.php"
-    owner: root
-    group: www-data
-    mode: "0640"

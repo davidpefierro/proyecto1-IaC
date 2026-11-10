@@ -30,10 +30,10 @@
     state: present
     login_unix_socket: "{{ mariadb_socket }}"
 
-- name: Crear el usuario (solo desde el servidor web por la red de datos)
+- name: Crear el usuario (solo desde el servidor php por la red de datos)
   community.mysql.mysql_user:
     name: "{{ bd_usuario }}"
-    host: "{{ ip_datos_web }}"
+    host: "{{ ip_datos_php }}"
     password: "{{ bd_password }}"
     priv: "{{ bd_nombre }}.*:ALL"
     column_case_sensitive: true

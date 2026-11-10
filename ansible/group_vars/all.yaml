@@ -12,6 +12,16 @@ bd_nombre: guestbook
 bd_usuario: guestbook
 bd_password: Gu3stB00k_2026
 
+# Aplicación: va en web (Apache sirve los estáticos) y en php (PHP-FPM
+# ejecuta los .php), y tiene que estar en la misma ruta en las dos
+document_root: /var/www/guestbook
+app_repo: https://github.com/josedom24/guestbook_php.git
+app_version: main
+
+# PHP-FPM
+php_fpm_puerto: 9000
+
 # IP de las máquinas en la red de datos (vienen del inventario que genera tofu)
 ip_datos_web: "{{ hostvars[groups['servidores_web'][0]]['ip_datos'] }}"
 ip_datos_bd: "{{ hostvars[groups['servidores_bd'][0]]['ip_datos'] }}"
+ip_datos_php: "{{ hostvars[groups['servidores_php'][0]]['ip_datos'] }}"

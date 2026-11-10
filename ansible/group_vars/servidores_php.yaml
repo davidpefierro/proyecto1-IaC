@@ -1,0 +1,11 @@
+---
+php_version: "8.4"
+
+paquetes_php:
+  - php{{ php_version }}-fpm
+  - php{{ php_version }}-mysql
+  - php{{ php_version }}-mbstring
+  - git
+  - mariadb-client
+
+php_fpm_pool: /etc/php/{{ php_version }}/fpm/pool.d

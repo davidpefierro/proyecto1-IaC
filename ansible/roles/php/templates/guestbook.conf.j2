@@ -1,0 +1,17 @@
+; {{ ansible_managed }}
+; Pool de PHP-FPM para la aplicación. Escucha por TCP en la red de datos
+; y solo acepta conexiones del servidor web
+[guestbook]
+user = www-data
+group = www-data
+
+listen = {{ ip_datos_php }}:{{ php_fpm_puerto }}
+listen.allowed_clients = {{ ip_datos_web }}
+
+pm = dynamic
+pm.max_children = 10
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+
+chdir = /

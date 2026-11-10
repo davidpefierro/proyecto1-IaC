@@ -1,0 +1,45 @@
+---
+- name: Instalar PHP-FPM y las extensiones de la aplicación
+  ansible.builtin.apt:
+    name: "{{ paquetes_php }}"
+    state: present
+    lock_timeout: 600
+
+- name: Pool de la aplicación escuchando en la red de datos
+  ansible.builtin.template:
+    src: guestbook.conf.j2
+    dest: "{{ php_fpm_pool }}/guestbook.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reiniciar php-fpm
+
+# El pool www que trae el paquete escucha en un socket local que aquí no se usa
+- name: Quitar el pool por defecto
+  ansible.builtin.file:
+    path: "{{ php_fpm_pool }}/www.conf"
+    state: absent
+  notify: Reiniciar php-fpm
+
+- name: PHP-FPM arrancado y habilitado
+  ansible.builtin.service:
+    name: php{{ php_version }}-fpm
+    state: started
+    enabled: true
+
+# PHP-FPM ejecuta los ficheros desde su disco, con la misma ruta que le
+# pasa Apache, así que la aplicación tiene que estar también aquí
+- name: Desplegar la aplicación
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ document_root }}"
+    version: "{{ app_version }}"
+    update: false
+
+- name: Generar config.php
+  ansible.builtin.template:
+    src: config.php.j2
+    dest: "{{ document_root }}/config.php"
+    owner: root
+    group: www-data
+    mode: "0640"

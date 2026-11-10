@@ -15,3 +15,11 @@ output "bd" {
     ip_datos = var.ip_datos_bd
   }
 }
+
+output "php" {
+  value = {
+    nombre   = "p1-php"
+    ip_nat   = try(libvirt_domain.p1-php.network_interface[0].addresses[0], "No disponible")
+    ip_datos = var.ip_datos_php
+  }
+}

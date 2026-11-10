@@ -32,6 +32,12 @@ variable "memoria_bd" {
   default     = 1024
 }
 
+variable "memoria_php" {
+  type        = number
+  description = "Memoria en MiB de la máquina php"
+  default     = 1024
+}
+
 variable "vcpu" {
   type        = number
   description = "Número de CPUs de cada máquina"
@@ -65,6 +71,11 @@ variable "ip_nat_bd" {
 }
 
 # IP estáticas en la red de datos (se configuran con cloud-init)
+variable "ip_nat_php" {
+  type    = string
+  default = "192.168.130.30"
+}
+
 variable "ip_datos_web" {
   type    = string
   default = "10.10.10.10"
@@ -73,6 +84,11 @@ variable "ip_datos_web" {
 variable "ip_datos_bd" {
   type    = string
   default = "10.10.10.20"
+}
+
+variable "ip_datos_php" {
+  type    = string
+  default = "10.10.10.30"
 }
 
 variable "mascara_datos" {

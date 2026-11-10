@@ -110,3 +110,57 @@ resource "libvirt_domain" "p1-bd" {
     target_type = "serial"
   }
 }
+
+##############################################
+# php — Debian 13 (PHP-FPM)
+##############################################
+
+resource "libvirt_volume" "p1-php-disk" {
+  name             = "p1-php.qcow2"
+  pool             = var.libvirt_pool_name
+  base_volume_name = var.imagen_base_debian
+  base_volume_pool = var.libvirt_pool_name
+  format           = "qcow2"
+}
+
+resource "libvirt_cloudinit_disk" "p1-php-cloudinit" {
+  name = "p1-php-cloudinit.iso"
+  pool = var.libvirt_pool_name
+  user_data = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
+    hostname  = "php"
+    usuario   = "debian"
+    clave_ssh = local.clave_ssh
+  })
+  network_config = templatefile("${path.module}/cloud-init/network-config.yaml.tftpl", {
+    ip_datos = var.ip_datos_php
+    mascara  = var.mascara_datos
+  })
+}
+
+resource "libvirt_domain" "p1-php" {
+  name   = "p1-php"
+  memory = var.memoria_php
+  vcpu   = var.vcpu
+
+  # ens3: red NAT, para la salida a internet y para Ansible
+  network_interface {
+    network_id     = libvirt_network.p1-nat.id
+    mac            = "52:54:00:13:00:30"
+    addresses      = [var.ip_nat_php]
+    wait_for_lease = true
+  }
+
+  # ens4: red de datos, por aquí le llegan las peticiones de Apache
+  network_interface {
+    network_id = libvirt_network.p1-datos.id
+  }
+
+  disk { volume_id = libvirt_volume.p1-php-disk.id }
+  cloudinit = libvirt_cloudinit_disk.p1-php-cloudinit.id
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+}

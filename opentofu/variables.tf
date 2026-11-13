@@ -38,6 +38,12 @@ variable "memoria_php" {
   default     = 1024
 }
 
+variable "memoria_nas" {
+  type        = number
+  description = "Memoria en MiB de la máquina nas"
+  default     = 512
+}
+
 variable "vcpu" {
   type        = number
   description = "Número de CPUs de cada máquina"
@@ -70,11 +76,17 @@ variable "ip_nat_bd" {
   default = "192.168.130.20"
 }
 
-# IP estáticas en la red de datos (se configuran con cloud-init)
 variable "ip_nat_php" {
   type    = string
   default = "192.168.130.30"
 }
+
+variable "ip_nat_nas" {
+  type    = string
+  default = "192.168.130.40"
+}
+
+# IP estáticas en la red de datos (se configuran con cloud-init)
 
 variable "ip_datos_web" {
   type    = string
@@ -91,7 +103,19 @@ variable "ip_datos_php" {
   default = "10.10.10.30"
 }
 
+variable "ip_datos_nas" {
+  type    = string
+  default = "10.10.10.40"
+}
+
 variable "mascara_datos" {
   type    = number
   default = 24
+}
+
+# Disco de datos del NAS (en bytes). Se crea vacío y lo formatea Ansible
+variable "tamano_disco_nas" {
+  type        = number
+  description = "Tamaño en bytes del disco de datos del nas"
+  default     = 2147483648 # 2 GiB
 }

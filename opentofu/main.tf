@@ -164,3 +164,68 @@ resource "libvirt_domain" "p1-php" {
     target_type = "serial"
   }
 }
+
+##############################################
+# nas — Debian 13 (servidor NFS)
+##############################################
+
+resource "libvirt_volume" "p1-nas-disk" {
+  name             = "p1-nas.qcow2"
+  pool             = var.libvirt_pool_name
+  base_volume_name = var.imagen_base_debian
+  base_volume_pool = var.libvirt_pool_name
+  format           = "qcow2"
+}
+
+# Segundo disco, vacío, para lo que se comparte por NFS. Se destruye y se
+# vuelve a crear con el escenario; lo formatea y lo rellena Ansible
+resource "libvirt_volume" "p1-nas-datos" {
+  name   = "p1-nas-datos.qcow2"
+  pool   = var.libvirt_pool_name
+  size   = var.tamano_disco_nas
+  format = "qcow2"
+}
+
+resource "libvirt_cloudinit_disk" "p1-nas-cloudinit" {
+  name = "p1-nas-cloudinit.iso"
+  pool = var.libvirt_pool_name
+  user_data = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
+    hostname  = "nas"
+    usuario   = "debian"
+    clave_ssh = local.clave_ssh
+  })
+  network_config = templatefile("${path.module}/cloud-init/network-config.yaml.tftpl", {
+    ip_datos = var.ip_datos_nas
+    mascara  = var.mascara_datos
+  })
+}
+
+resource "libvirt_domain" "p1-nas" {
+  name   = "p1-nas"
+  memory = var.memoria_nas
+  vcpu   = var.vcpu
+
+  # ens3: red NAT, solo para instalar paquetes y para Ansible
+  network_interface {
+    network_id     = libvirt_network.p1-nat.id
+    mac            = "52:54:00:13:00:40"
+    addresses      = [var.ip_nat_nas]
+    wait_for_lease = true
+  }
+
+  # ens4: red de datos, por aquí se sirve el NFS
+  network_interface {
+    network_id = libvirt_network.p1-datos.id
+  }
+
+  # vda: sistema, vdb: datos
+  disk { volume_id = libvirt_volume.p1-nas-disk.id }
+  disk { volume_id = libvirt_volume.p1-nas-datos.id }
+  cloudinit = libvirt_cloudinit_disk.p1-nas-cloudinit.id
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+}

@@ -1,0 +1,69 @@
+---
+- name: Instalar el servidor NFS
+  ansible.builtin.apt:
+    name: "{{ paquetes_nas }}"
+    state: present
+    lock_timeout: 600
+
+# El disco llega vacío después de cada tofu apply. Si ya tiene sistema de
+# ficheros no se toca (sin force no se vuelve a formatear)
+- name: Formatear el disco de datos
+  community.general.filesystem:
+    dev: "{{ nas_disco }}"
+    fstype: ext4
+
+- name: Montar el disco de datos
+  ansible.posix.mount:
+    path: "{{ nas_montaje }}"
+    src: "{{ nas_disco }}"
+    fstype: ext4
+    opts: defaults
+    state: mounted
+
+# Solo NFSv4: no hace falta rpcbind ni mountd para los clientes, todo va
+# por el puerto 2049
+- name: Desactivar NFSv3
+  community.general.ini_file:
+    path: /etc/nfs.conf
+    section: nfsd
+    option: vers3
+    value: "n"
+    mode: "0644"
+  notify: Reiniciar nfs
+
+- name: Desplegar la aplicación en el disco de datos
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ nfs_export }}"
+    version: "{{ app_version }}"
+    update: false
+
+# El config.php ahora está aquí. www-data tiene el mismo gid (33) en web y
+# en php, así que PHP-FPM lo puede leer por NFS y nadie más
+- name: Generar config.php
+  ansible.builtin.template:
+    src: config.php.j2
+    dest: "{{ nfs_export }}/config.php"
+    owner: root
+    group: www-data
+    mode: "0640"
+
+- name: Exportaciones
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Recargar exportaciones
+
+- name: Servidor NFS arrancado y habilitado
+  ansible.builtin.service:
+    name: nfs-kernel-server
+    state: started
+    enabled: true
+
+# Los clientes montan en el play siguiente, así que las exportaciones
+# tienen que estar ya aplicadas
+- name: Aplicar las exportaciones
+  ansible.builtin.meta: flush_handlers

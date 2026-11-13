@@ -1,0 +1,13 @@
+---
+paquetes_nas:
+  - nfs-kernel-server
+  - git
+
+# Disco de datos (vdb, lo crea tofu vacío) y dónde se monta
+nas_disco: /dev/vdb
+nas_montaje: /srv/nfs
+
+# Máquinas que pueden montar la aplicación (solo lectura)
+nas_clientes:
+  - "{{ ip_datos_web }}"
+  - "{{ ip_datos_php }}"

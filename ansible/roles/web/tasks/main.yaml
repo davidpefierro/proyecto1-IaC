@@ -51,13 +51,3 @@
   args:
     removes: /etc/apache2/sites-enabled/000-default.conf
   notify: Recargar apache
-
-# Apache necesita los ficheros para servir los estáticos (css) y para las
-# reglas del .htaccess, que comprueban si el fichero existe. El config.php
-# con la contraseña solo está en php, que es quien se conecta a la base de datos
-- name: Desplegar la aplicación
-  ansible.builtin.git:
-    repo: "{{ app_repo }}"
-    dest: "{{ document_root }}"
-    version: "{{ app_version }}"
-    update: false

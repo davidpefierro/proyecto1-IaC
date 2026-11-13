@@ -26,20 +26,3 @@
     name: php{{ php_version }}-fpm
     state: started
     enabled: true
-
-# PHP-FPM ejecuta los ficheros desde su disco, con la misma ruta que le
-# pasa Apache, así que la aplicación tiene que estar también aquí
-- name: Desplegar la aplicación
-  ansible.builtin.git:
-    repo: "{{ app_repo }}"
-    dest: "{{ document_root }}"
-    version: "{{ app_version }}"
-    update: false
-
-- name: Generar config.php
-  ansible.builtin.template:
-    src: config.php.j2
-    dest: "{{ document_root }}/config.php"
-    owner: root
-    group: www-data
-    mode: "0640"

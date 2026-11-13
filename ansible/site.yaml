@@ -13,14 +13,23 @@
   roles:
     - bd
 
+# Antes que php y web, que montan lo que exporta
+- name: Servidor NAS
+  hosts: servidores_nas
+  become: true
+  roles:
+    - nas
+
 - name: Servidor PHP-FPM
   hosts: servidores_php
   become: true
   roles:
+    - cliente_nfs
     - php
 
 - name: Servidor web
   hosts: servidores_web
   become: true
   roles:
+    - cliente_nfs
     - web

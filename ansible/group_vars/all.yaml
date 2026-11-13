@@ -12,11 +12,14 @@ bd_nombre: guestbook
 bd_usuario: guestbook
 bd_password: Gu3stB00k_2026
 
-# Aplicación: va en web (Apache sirve los estáticos) y en php (PHP-FPM
-# ejecuta los .php), y tiene que estar en la misma ruta en las dos
+# Aplicación: está una sola vez en el nas y web y php la montan por NFS en
+# document_root (Apache sirve los estáticos y PHP-FPM ejecuta los .php)
 document_root: /var/www/guestbook
 app_repo: https://github.com/josedom24/guestbook_php.git
 app_version: main
+
+# Directorio que exporta el nas
+nfs_export: /srv/nfs/guestbook
 
 # PHP-FPM
 php_fpm_puerto: 9000
@@ -25,3 +28,4 @@ php_fpm_puerto: 9000
 ip_datos_web: "{{ hostvars[groups['servidores_web'][0]]['ip_datos'] }}"
 ip_datos_bd: "{{ hostvars[groups['servidores_bd'][0]]['ip_datos'] }}"
 ip_datos_php: "{{ hostvars[groups['servidores_php'][0]]['ip_datos'] }}"
+ip_datos_nas: "{{ hostvars[groups['servidores_nas'][0]]['ip_datos'] }}"

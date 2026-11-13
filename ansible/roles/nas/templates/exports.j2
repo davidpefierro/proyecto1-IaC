@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+# La aplicación, en solo lectura y solo para web y php (red de datos)
+{{ nfs_export }}{% for ip in nas_clientes %} {{ ip }}(ro,sync,no_subtree_check,root_squash){% endfor %}
+

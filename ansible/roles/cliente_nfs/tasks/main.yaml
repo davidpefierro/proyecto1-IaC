@@ -1,0 +1,16 @@
+---
+- name: Instalar el cliente NFS
+  ansible.builtin.apt:
+    name: nfs-common
+    state: present
+    lock_timeout: 600
+
+# Se monta en la misma ruta que tenía la aplicación antes, así Apache y
+# PHP-FPM no cambian. Queda en el fstab para que se monte al arrancar
+- name: Montar la aplicación desde el nas
+  ansible.posix.mount:
+    path: "{{ document_root }}"
+    src: "{{ ip_datos_nas }}:{{ nfs_export }}"
+    fstype: nfs
+    opts: ro,nfsvers=4.2,_netdev
+    state: mounted

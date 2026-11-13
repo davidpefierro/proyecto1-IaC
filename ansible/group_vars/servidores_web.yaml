@@ -1,7 +1,6 @@
 ---
 paquetes_web:
   - apache2
-  - git
 
 # Virtual host
 servidor_nombre: www.davidpefierro.org

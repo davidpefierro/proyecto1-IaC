@@ -23,3 +23,11 @@ output "php" {
     ip_datos = var.ip_datos_php
   }
 }
+
+output "nas" {
+  value = {
+    nombre   = "p1-nas"
+    ip_nat   = try(libvirt_domain.p1-nas.network_interface[0].addresses[0], "No disponible")
+    ip_datos = var.ip_datos_nas
+  }
+}

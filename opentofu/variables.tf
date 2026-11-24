@@ -39,6 +39,12 @@ variable "memoria_php" {
   default     = 1024
 }
 
+variable "memoria_balanceador" {
+  type        = number
+  description = "Memoria en MiB de la máquina balanceador"
+  default     = 512
+}
+
 variable "memoria_nas" {
   type        = number
   description = "Memoria en MiB de la máquina nas"
@@ -67,6 +73,13 @@ variable "red_nat" {
 
 # IP fijas que da el DHCP de la red NAT (reserva por MAC), así el nombre del
 # virtual host apunta siempre a la misma IP aunque se destruya el escenario
+# El balanceador se queda con la .10, que es a la que apunta
+# www.davidpefierro.org
+variable "ip_nat_balanceador" {
+  type    = string
+  default = "192.168.130.10"
+}
+
 # Servidores web: se crea uno por cada IP de la lista (web1, web2...).
 # Para añadir otro basta con añadir su IP en las dos listas
 variable "ip_nat_webs" {
@@ -90,6 +103,11 @@ variable "ip_nat_nas" {
 }
 
 # IP estáticas en la red de datos (se configuran con cloud-init)
+
+variable "ip_datos_balanceador" {
+  type    = string
+  default = "10.10.10.10"
+}
 
 variable "ip_datos_webs" {
   type    = list(string)

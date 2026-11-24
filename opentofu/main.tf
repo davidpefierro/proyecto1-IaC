@@ -3,6 +3,60 @@ locals {
 }
 
 ##############################################
+# balanceador — Debian 13 (HAProxy)
+##############################################
+
+resource "libvirt_volume" "p1-balanceador-disk" {
+  name             = "p1-balanceador.qcow2"
+  pool             = var.libvirt_pool_name
+  base_volume_name = var.imagen_base_debian
+  base_volume_pool = var.libvirt_pool_name
+  format           = "qcow2"
+}
+
+resource "libvirt_cloudinit_disk" "p1-balanceador-cloudinit" {
+  name = "p1-balanceador-cloudinit.iso"
+  pool = var.libvirt_pool_name
+  user_data = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
+    hostname  = "balanceador"
+    usuario   = "debian"
+    clave_ssh = local.clave_ssh
+  })
+  network_config = templatefile("${path.module}/cloud-init/network-config.yaml.tftpl", {
+    ip_datos = var.ip_datos_balanceador
+    mascara  = var.mascara_datos
+  })
+}
+
+resource "libvirt_domain" "p1-balanceador" {
+  name   = "p1-balanceador"
+  memory = var.memoria_balanceador
+  vcpu   = var.vcpu
+
+  # ens3: red NAT, por aquí entran las peticiones a www.davidpefierro.org
+  network_interface {
+    network_id     = libvirt_network.p1-nat.id
+    mac            = "52:54:00:13:00:10"
+    addresses      = [var.ip_nat_balanceador]
+    wait_for_lease = true
+  }
+
+  # ens4: red de datos, por aquí reparte las peticiones a los web
+  network_interface {
+    network_id = libvirt_network.p1-datos.id
+  }
+
+  disk { volume_id = libvirt_volume.p1-balanceador-disk.id }
+  cloudinit = libvirt_cloudinit_disk.p1-balanceador-cloudinit.id
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+}
+
+##############################################
 # web1, web2... — Debian 13 (Apache)
 ##############################################
 

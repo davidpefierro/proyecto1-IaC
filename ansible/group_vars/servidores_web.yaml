@@ -1,6 +1,3 @@
 ---
 paquetes_web:
   - apache2
-
-# Virtual host
-servidor_nombre: www.davidpefierro.org

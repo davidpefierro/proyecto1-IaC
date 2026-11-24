@@ -1,0 +1,9 @@
+---
+# Página de estadísticas de HAProxy (http://192.168.130.10:8404/stats)
+haproxy_stats_puerto: 8404
+haproxy_stats_usuario: admin
+haproxy_stats_password: St4ts_2026
+
+# Comprobación de salud: un fichero estático, así un web solo se marca
+# caído si falla su Apache (no si falla PHP-FPM, que es común a todos)
+haproxy_check_uri: /style.css

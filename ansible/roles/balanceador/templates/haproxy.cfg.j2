@@ -1,0 +1,42 @@
+# {{ ansible_managed }}
+global
+    log /dev/log local0
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    timeout connect 5s
+    timeout client  30s
+    timeout server  30s
+
+# Entrada de la aplicación, en la red NAT
+frontend guestbook
+    bind {{ ansible_host }}:80
+    default_backend servidores_web
+
+# Reparto entre los web por la red de datos. No hacen falta sesiones
+# pegajosas: el PHP (y las sesiones) está solo en la máquina php
+backend servidores_web
+    balance roundrobin
+    option forwardfor
+    option httpchk
+    http-check send meth GET uri {{ haproxy_check_uri }} ver HTTP/1.1 hdr Host {{ servidor_nombre }}
+    http-check expect status 200
+{% for h in groups['servidores_web'] %}
+    server {{ h }} {{ hostvars[h]['ip_datos'] }}:80 check inter 3s fall 2 rise 2
+{% endfor %}
+
+# Estadísticas
+listen estadisticas
+    bind {{ ansible_host }}:{{ haproxy_stats_puerto }}
+    stats enable
+    stats uri /stats
+    stats refresh 5s
+    stats auth {{ haproxy_stats_usuario }}:{{ haproxy_stats_password }}

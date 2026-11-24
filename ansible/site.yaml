@@ -33,3 +33,10 @@
   roles:
     - cliente_nfs
     - web
+
+# El último, cuando los web ya están sirviendo la aplicación
+- name: Balanceador de carga
+  hosts: servidores_balanceador
+  become: true
+  roles:
+    - balanceador

@@ -1,5 +1,13 @@
 # IP de las máquinas. La de la red NAT la da el DHCP (se lee del lease),
 # la de la red de datos es estática (cloud-init)
+output "balanceador" {
+  value = {
+    nombre   = "p1-balanceador"
+    ip_nat   = try(libvirt_domain.p1-balanceador.network_interface[0].addresses[0], "No disponible")
+    ip_datos = var.ip_datos_balanceador
+  }
+}
+
 output "web" {
   value = [for i, d in libvirt_domain.p1-web : {
     nombre   = d.name

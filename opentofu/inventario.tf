@@ -4,6 +4,8 @@ resource "local_file" "inventario" {
   filename        = "${path.module}/../ansible/hosts"
   file_permission = "0644"
   content = templatefile("${path.module}/inventario.tftpl", {
+    ip_balanceador       = try(libvirt_domain.p1-balanceador.network_interface[0].addresses[0], "")
+    ip_datos_balanceador = var.ip_datos_balanceador
     webs = [for i, d in libvirt_domain.p1-web : {
       nombre   = "web${i + 1}"
       ip_nat   = try(d.network_interface[0].addresses[0], "")

@@ -28,7 +28,6 @@ nfs_export: /srv/nfs/guestbook
 php_fpm_puerto: 9000
 
 # IP de las máquinas en la red de datos (vienen del inventario que genera tofu)
-ip_datos_web: "{{ hostvars[groups['servidores_web'][0]]['ip_datos'] }}"
 ips_datos_webs: "{{ groups['servidores_web'] | map('extract', hostvars, 'ip_datos') | list }}"
 ip_datos_balanceador: "{{ hostvars[groups['servidores_balanceador'][0]]['ip_datos'] }}"
 ip_datos_bd: "{{ hostvars[groups['servidores_bd'][0]]['ip_datos'] }}"

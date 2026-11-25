@@ -7,7 +7,5 @@ paquetes_nas:
 nas_disco: /dev/vdb
 nas_montaje: /srv/nfs
 
-# Máquinas que pueden montar la aplicación (solo lectura)
-nas_clientes:
-  - "{{ ip_datos_web }}"
-  - "{{ ip_datos_php }}"
+# Máquinas que pueden montar la aplicación (solo lectura): todos los web y php
+nas_clientes: "{{ ips_datos_webs + [ip_datos_php] }}"

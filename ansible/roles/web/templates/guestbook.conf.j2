@@ -11,6 +11,13 @@
 
     DirectoryIndex index.php index.html
 
+    # Qué servidor web ha atendido la petición (para ver el reparto)
+    Header always set X-Servidor "{{ inventory_hostname }}"
+
+    # Las peticiones llegan del balanceador: la IP del cliente va en X-Forwarded-For
+    RemoteIPHeader X-Forwarded-For
+    RemoteIPInternalProxy {{ ip_datos_balanceador }}
+
     # Los .php los ejecuta PHP-FPM en la máquina php, por la red de datos
     <FilesMatch "\.php$">
         SetHandler "proxy:fcgi://{{ ip_datos_php }}:{{ php_fpm_puerto }}"

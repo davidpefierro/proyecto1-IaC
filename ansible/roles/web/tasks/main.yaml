@@ -25,6 +25,17 @@
     state: present
   notify: Reiniciar apache
 
+# headers para la cabecera X-Servidor y remoteip para ver en los logs la IP
+# del cliente que manda el balanceador en X-Forwarded-For
+- name: Activar mod_headers y mod_remoteip
+  community.general.apache2_module:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - headers
+    - remoteip
+  notify: Reiniciar apache
+
 - name: Apache arrancado y habilitado
   ansible.builtin.service:
     name: apache2

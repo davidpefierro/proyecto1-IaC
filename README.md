@@ -7,7 +7,9 @@ el libro de visitas [guestbook_php](https://github.com/josedom24/guestbook_php) 
 
 | Máquina | Sistema       | Red NAT (DHCP)   | Red de datos  | Función             |
 |---------|---------------|------------------|---------------|---------------------|
-| `web`   | Debian 13     | 192.168.130.10   | 10.10.10.10   | Apache (sin PHP)    |
+| `balanceador` | Debian 13 | 192.168.130.10 | 10.10.10.10 | HAProxy             |
+| `web1`  | Debian 13     | 192.168.130.11   | 10.10.10.11   | Apache (sin PHP)    |
+| `web2`  | Debian 13     | 192.168.130.12   | 10.10.10.12   | Apache (sin PHP)    |
 | `php`   | Debian 13     | 192.168.130.30   | 10.10.10.30   | PHP-FPM             |
 | `bd`    | Ubuntu 26.04  | 192.168.130.20   | 10.10.10.20   | MariaDB             |
 | `nas`   | Debian 13     | 192.168.130.40   | 10.10.10.40   | NFS (la aplicación) |
@@ -15,8 +17,8 @@ el libro de visitas [guestbook_php](https://github.com/josedom24/guestbook_php) 
 - **p1-nat** (`192.168.130.0/24`): red NAT con DHCP. Las IP se reservan por MAC para que no
   cambien al recrear el escenario. Por aquí se accede a la web y entra Ansible.
 - **p1-datos** (`10.10.10.0/24`): red muy aislada (sin DHCP ni salida), con IP estáticas
-  puestas por cloud-init. Por ella Apache pasa los `.php` a PHP-FPM, PHP-FPM se conecta a MariaDB
-  y `web` y `php` montan la aplicación del `nas`.
+  puestas por cloud-init. Por ella el balanceador reparte entre los web, Apache pasa los `.php` a
+  PHP-FPM, PHP-FPM se conecta a MariaDB y los web y `php` montan la aplicación del `nas`.
 
 ### PHP-FPM en otra máquina (modificación 1)
 
@@ -38,6 +40,21 @@ La aplicación está una sola vez, en el `nas`, y `web` y `php` la montan por NF
 - En `web` y `php` el montaje queda en el `/etc/fstab`. El `config.php` es `root:www-data 0640`, así que
   solo lo lee PHP-FPM (root de los clientes no puede por el `root_squash`).
 
+### Balanceador con dos servidores web (modificación 3)
+
+`www.davidpefierro.org` apunta al `balanceador` (`192.168.130.10`), que reparte las peticiones con HAProxy
+(roundrobin) entre `web1` y `web2` por la red de datos.
+
+- Los servidores web se crean con `count` en OpenTofu, uno por cada IP de las listas `ip_nat_webs` e
+  `ip_datos_webs`. Para tener un tercero basta con añadir una IP en cada lista: el inventario, las
+  exportaciones del nas, el pool de PHP-FPM y los servidores de HAProxy salen del grupo `servidores_web`.
+- HAProxy comprueba cada web pidiendo `/style.css` y deja de mandarle peticiones si falla.
+- No hacen falta sesiones pegajosas: el PHP (y sus sesiones) solo se ejecuta en `php`.
+- Cada web añade la cabecera `X-Servidor` con su nombre, y con `mod_remoteip` registra la IP real del
+  cliente que le pasa HAProxy en `X-Forwarded-For`.
+- Estadísticas en <http://192.168.130.10:8404/stats> (usuario y contraseña en
+  `group_vars/servidores_balanceador.yaml`).
+
 ## Requisitos
 
 - libvirt/KVM, OpenTofu y Ansible (con las colecciones `community.mysql`, `community.general` y `ansible.posix`).
@@ -56,7 +73,7 @@ ansible-playbook site.yaml
 ```
 
 `tofu apply` genera el inventario `ansible/hosts` con los grupos `servidores_web`,
-`servidores_php`, `servidores_bd` y `servidores_nas`.
+`servidores_php`, `servidores_bd`, `servidores_nas` y `servidores_balanceador`.
 
 Para acceder a la aplicación desde el equipo hay que resolver el nombre del virtual host:
 
@@ -89,6 +106,7 @@ ansible/
   roles/cliente_nfs                    # monta la aplicación del nas (web y php)
   roles/php                            # PHP-FPM escuchando en la red de datos
   roles/web                            # Apache con proxy_fcgi y el virtual host
+  roles/balanceador                    # HAProxy delante de los web
 ```
 
 ## Idempotencia
